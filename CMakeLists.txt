@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(interpretor LANGUAGES CXX)
+project(interpreter LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(interpretor main.cpp)
+add_executable(interpreter main.cpp)
 
-install(TARGETS interpretor
+install(TARGETS interpreter
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
