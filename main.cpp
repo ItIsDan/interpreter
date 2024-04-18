@@ -40,14 +40,16 @@ enum TokenType : int
     IF,
     ELSE,
     WHILE,
+    AND,
+    OR,
     NAME,
     END
 };
 
 struct Token
 {
-    TokenType type;
-    string value;
+    TokenType type { EMPTY };
+    string value {};
 };
 
 class Lexer
@@ -87,6 +89,12 @@ public:
             } else if (currentChar == ',') {
                 position++;
                 return Token { COMMA, "," };
+            } else if (currentChar == '&') {
+                position++;
+                return Token { AND, "&" };
+            } else if (currentChar == '|') {
+                position++;
+                return Token { OR, "|" };
             } else if (currentChar == '{') {
                 position++;
                 return Token { LBRACE, "{" };
@@ -160,10 +168,6 @@ public:
                 skipWhitespace();
                 continue;
             }
-
-            // Invalid character
-            cerr << "Invalid character: " << currentChar << endl;
-            exit(1);
         }
 
         // End of input
@@ -241,6 +245,10 @@ public:
             return "WHILE";
         case TokenType::NAME:
             return "NAME";
+        case TokenType::AND:
+            return "AND";
+        case TokenType::OR:
+            return "OR";
         case TokenType::END:
             return "END";
         default:
@@ -262,6 +270,11 @@ private:
 
             switch (currentChar) {
             case '.':
+                if (isFloat) {
+                    position++;
+                    cout << result << "\n";
+                    return Token { ERROR, result };
+                }
                 if (position + 1 < input.length() && isdigit(input[position + 1])) {
                     // Если следующий символ - цифра, число считается вещественным
                     isFloat = true;
@@ -269,6 +282,9 @@ private:
                 } else {
                     // Если точка не следует за цифрой или после неё нет цифры, это ошибка
                     if (input[position + 1] == ';' || isspace(input[position + 1])) {
+                        position++;
+                        return Token { ERROR, result };
+                    } else {
                         position++;
                         return Token { ERROR, result };
                     }
@@ -315,7 +331,7 @@ private:
 
 int main()
 {
-    string input = "int a3 = 1.2d; float 3a; ";
+    string input = "0.154436.";
     Lexer lexer(input);
 
     vector<Token> tokens;
