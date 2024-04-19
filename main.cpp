@@ -6,7 +6,7 @@
 
 int main()
 {
-    string input = "a.1";
+    string input = "1 == hello 13 31.23 .. 32";
     Lexer lexer;
     lexer.setText(input);
 
@@ -17,7 +17,14 @@ int main()
         token = lexer.getNextToken();
     }
 
-    for (const Token &token : tokens) std::cout << lexer.tokenToString(token) << " ";
+    for (const Token &token : tokens) {
+        if (token.type != ERROR)
+            std::cout << lexer.tokenToString(token) << " ";
+        else {
+            std::cout << lexer.tokenToString(token) << "\n";
+            exit(-1);
+        }
+    }
     cout << endl;
 
     return 0;

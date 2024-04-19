@@ -238,16 +238,12 @@ Token Lexer::parseNumber()
 
         switch (currentChar) {
         case '.':
-            if (_position - 1 > 0 && !isdigit(_input[_position - 1])
-                && !isdigit(_input[_position + 1])) {
-                _position++;
-                return Token { ERROR, result };
-            }
             if (isFloat) {
                 _position++;
                 return Token { ERROR, result };
             }
-            if (_position + 1 < _input.length() && isdigit(_input[_position + 1])) {
+            if (_position + 1 < _input.length() && isdigit(_input[_position + 1])
+                && _position - 1 >= 0 && isdigit(_input[_position - 1])) {
                 isFloat = true;
                 result += currentChar;
             } else {
@@ -269,8 +265,8 @@ Token Lexer::parseNumber()
         case ' ':
         case '{':
         case '}':
-            return isFloat ? Token { FLOAT, result } : Token { INTEGER, result };
-
+            return isFloat ? Token { FLOAT, std::stof(result) }
+                           : Token { INTEGER, std::stoi(result) };
             break;
         default:
             if (!isdigit(currentChar)) {
@@ -281,7 +277,7 @@ Token Lexer::parseNumber()
             break;
         }
     }
-    return isFloat ? Token { FLOAT, result } : Token { INTEGER, result };
+    return isFloat ? Token { FLOAT, std::stof(result) } : Token { INTEGER, std::stoi(result) };
 }
 
 void Lexer::skipWhitespace()

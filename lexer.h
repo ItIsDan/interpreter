@@ -2,6 +2,8 @@
 #define LEXER_H
 
 #include <string>
+#include <variant>
+
 using namespace std;
 
 enum TokenType : int
@@ -55,11 +57,7 @@ enum State
 struct Token
 {
     TokenType type { EMPTY };
-    std::string value {};
-    int begin; // Начало лексемы
-    int end; // конец лексемы
-    //    int intresult;
-    //    float fresult;
+    std::variant<std::string, int, float> value;
 };
 
 // Когда меняется позиция вводит две переменные , где номер в строке увеличивается, если \n то номер
