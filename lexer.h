@@ -2,6 +2,8 @@
 #define LEXER_H
 
 #include <string>
+#include <variant>
+
 using namespace std;
 
 enum TokenType : int
@@ -48,7 +50,7 @@ enum TokenType : int
 struct Token
 {
     TokenType type { EMPTY };
-    std::string value {};
+    std::variant<std::string, int, double> value;
 };
 
 class Lexer

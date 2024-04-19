@@ -212,41 +212,39 @@ Token Lexer::parseNumber()
         char currentChar = _input[_position];
 
         switch (currentChar) {
-        case '.':
-            if (isFloat) {
-                _position++;
-                return Token { ERROR, result };
-            }
-            if (_position + 1 < _input.length() && isdigit(_input[_position + 1])) {
-                isFloat = true;
-                result += currentChar;
-            } else {
-                if (_input[_position + 1] == ';' || isspace(_input[_position + 1])) {
-                    _position++;
-                    return Token { ERROR, result };
-                } else {
+            case '.':
+                if (isFloat) {
                     _position++;
                     return Token { ERROR, result };
                 }
-            }
-            break;
-        case ';':
-            return isFloat ? Token { FLOAT, result } : Token { INTEGER, result };
+                if (_position + 1 < _input.length() && isdigit(_input[_position + 1])) {
+                    isFloat = true;
+                    result += currentChar;
+                } else {
+                    if (_input[_position + 1] == ';' || isspace(_input[_position + 1])) {
+                        _position++;
+                        return Token { ERROR, result };
+                    } else {
+                        _position++;
+                        return Token { ERROR, result };
+                    }
+                }
+                break;
+            case ';':
+                return isFloat ? Token { FLOAT, std::stod(result) } : Token { INTEGER, std::stoi(result) };
+            default:
+                if (!isdigit(currentChar)) {
+                    if (isspace(currentChar))
+                        break;
 
-            break;
-        default:
-            if (!isdigit(currentChar)) {
-                if (isspace(currentChar))
-                    break;
-
-                _position++;
-                return Token { ERROR, result };
-            }
-            result += currentChar;
-            break;
+                    _position++;
+                    return Token { ERROR, result };
+                }
+                result += currentChar;
+                break;
         }
     }
-    return isFloat ? Token { FLOAT, result } : Token { INTEGER, result };
+    return isFloat ? Token { FLOAT, std::stod(result) } : Token { INTEGER, std::stoi(result) };
 }
 
 void Lexer::skipWhitespace()
