@@ -42,14 +42,28 @@ enum TokenType : int
     AND,
     OR,
     NAME,
+    EOL,
     END
+};
+
+// Текущие состояния, енам состояний
+enum State
+{
+
 };
 
 struct Token
 {
     TokenType type { EMPTY };
     std::string value {};
+    int begin; // Начало лексемы
+    int end; // конец лексемы
+    //    int intresult;
+    //    float fresult;
 };
+
+// Когда меняется позиция вводит две переменные , где номер в строке увеличивается, если \n то номер
+// в строке обнуляем а номер строки увеличиваем.
 
 class Lexer
 {
@@ -60,7 +74,7 @@ public:
 
     Token getNextToken();
 
-    string tokenToString(TokenType token);
+    string tokenToString(Token token);
 
 private:
     string _input;

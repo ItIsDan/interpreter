@@ -6,7 +6,7 @@
 
 int main()
 {
-    string input = "0.154436";
+    string input = "a.1";
     Lexer lexer;
     lexer.setText(input);
 
@@ -17,7 +17,7 @@ int main()
         token = lexer.getNextToken();
     }
 
-    for (const Token &token : tokens) std::cout << lexer.tokenToString(token.type) << " ";
+    for (const Token &token : tokens) std::cout << lexer.tokenToString(token) << " ";
     cout << endl;
 
     return 0;

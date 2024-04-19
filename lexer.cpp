@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include <iostream>
 
 Lexer::Lexer() : _position(0)
 {}
@@ -9,57 +10,73 @@ void Lexer::setText(const string &text)
         return;
 
     _input = text;
+    _position = 0;
 }
 
 Token Lexer::getNextToken()
 {
     while (_position < _input.length()) {
         char currentChar = _input[_position];
-        if (isdigit(currentChar) || currentChar == '.') {
+
+        switch (currentChar) {
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        case '.':
             return parseNumber();
-        } else if (currentChar == '+') {
+        case '+':
             _position++;
             return Token { PLUS, "+" };
-        } else if (currentChar == '-') {
+        case '-':
             _position++;
             return Token { MINUS, "-" };
-        } else if (currentChar == '*') {
+        case '*':
             _position++;
             return Token { MULTIPLY, "*" };
-        } else if (currentChar == '/') {
+        case '/':
             _position++;
             return Token { DIVIDE, "/" };
-        } else if (currentChar == '(') {
+        case '(':
             _position++;
             return Token { LPAREN, "(" };
-        } else if (currentChar == ')') {
+        case ')':
             _position++;
             return Token { RPAREN, ")" };
-        } else if (currentChar == ';') {
+        case ';':
             _position++;
             return Token { SEMICOLON, ";" };
-        } else if (currentChar == ',') {
+        case ',':
             _position++;
             return Token { COMMA, "," };
-        } else if (currentChar == '&') {
+        case '&':
             _position++;
             return Token { AND, "&" };
-        } else if (currentChar == '|') {
+        case '|':
             _position++;
             return Token { OR, "|" };
-        } else if (currentChar == '{') {
+        case '{':
             _position++;
             return Token { LBRACE, "{" };
-        } else if (currentChar == '}') {
+        case '\n':
+            _position++;
+            return Token { EOL, "EOL" };
+        case '}':
             _position++;
             return Token { RBRACE, "}" };
-        } else if (currentChar == '[') {
+        case '[':
             _position++;
             return Token { LSQUARE, "[" };
-        } else if (currentChar == ']') {
+        case ']':
             _position++;
             return Token { RSQUARE, "]" };
-        } else if (currentChar == '!') {
+        case '!':
             if (_position + 1 < _input.length() && _input[_position + 1] == '=') {
                 _position += 2;
                 return Token { NOT_EQUALS, "!=" };
@@ -67,7 +84,9 @@ Token Lexer::getNextToken()
                 _position++;
                 return Token { NOT, "!" };
             }
-        } else if (currentChar == '<' || currentChar == '>' || currentChar == '=') {
+        case '<':
+        case '>':
+        case '=':
             if (_position + 1 < _input.length() && _input[_position + 1] == '=') {
                 _position += 2;
                 if (currentChar == '<') {
@@ -87,43 +106,47 @@ Token Lexer::getNextToken()
                     return Token { ASSIGN, "=" };
                 }
             }
-        } else if (isalpha(currentChar)) {
-            string word;
-            while (_position < _input.length() && isalnum(_input[_position])) {
-                word += _input[_position];
-                _position++;
-            }
+        default:
+            if (isalpha(currentChar)) {
+                string word;
+                while (_position < _input.length() && isalnum(_input[_position])) {
+                    word += _input[_position];
+                    _position++;
+                }
 
-            if (word == "int") {
-                return Token { INT_DECLARE, "int" };
-            } else if (word == "float") {
-                return Token { FLOAT_DECLARE, "float" };
-            } else if (word == "arr") {
-                return Token { ARRAY_DECLARE, "arr" };
-            } else if (word == "read") {
-                return Token { READ, "read" };
-            } else if (word == "write") {
-                return Token { WRITE, "write" };
-            } else if (word == "if") {
-                return Token { IF, "if" };
-            } else if (word == "else") {
-                return Token { ELSE, "else" };
-            } else if (word == "while") {
-                return Token { WHILE, "while" };
-            } else {
-                return Token { NAME, word };
+                if (word == "int") {
+                    return Token { INT_DECLARE, "int" };
+                } else if (word == "float") {
+                    return Token { FLOAT_DECLARE, "float" };
+                } else if (word == "arr") {
+                    return Token { ARRAY_DECLARE, "arr" };
+                } else if (word == "read") {
+                    return Token { READ, "read" };
+                } else if (word == "write") {
+                    return Token { WRITE, "write" };
+                } else if (word == "if") {
+                    return Token { IF, "if" };
+                } else if (word == "else") {
+                    return Token { ELSE, "else" };
+                } else if (word == "while") {
+                    return Token { WHILE, "while" };
+                } else {
+                    return Token { NAME, word };
+                }
+            } else if (isspace(currentChar)) {
+                skipWhitespace();
+                continue;
             }
-        } else if (isspace(currentChar)) {
-            skipWhitespace();
-            continue;
+            break;
         }
     }
+
     return Token { END, "\0" };
 }
 
-string Lexer::tokenToString(TokenType token)
+string Lexer::tokenToString(Token token)
 {
-    switch (token) {
+    switch (token.type) {
     case TokenType::DEFAULT:
         return "DEFAULT";
     case TokenType::EMPTY:
@@ -198,6 +221,8 @@ string Lexer::tokenToString(TokenType token)
         return "OR";
     case TokenType::END:
         return "END";
+    case TokenType::EOL:
+        return "EOL";
     default:
         return "UNKNOWN";
     }
@@ -213,6 +238,11 @@ Token Lexer::parseNumber()
 
         switch (currentChar) {
         case '.':
+            if (_position - 1 > 0 && !isdigit(_input[_position - 1])
+                && !isdigit(_input[_position + 1])) {
+                _position++;
+                return Token { ERROR, result };
+            }
             if (isFloat) {
                 _position++;
                 return Token { ERROR, result };
@@ -230,15 +260,20 @@ Token Lexer::parseNumber()
                 }
             }
             break;
+        case '+':
+        case '-':
+        case '*':
+        case '/':
         case ';':
+        case '=':
+        case ' ':
+        case '{':
+        case '}':
             return isFloat ? Token { FLOAT, result } : Token { INTEGER, result };
 
             break;
         default:
             if (!isdigit(currentChar)) {
-                if (isspace(currentChar))
-                    break;
-
                 _position++;
                 return Token { ERROR, result };
             }
