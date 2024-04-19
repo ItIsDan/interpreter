@@ -1,0 +1,7 @@
+D:/stydy/uni/6_семестр/Методы компиляции/лаба/interpreter/cmake-build-debug/CMakeFiles/interpreter.dir
+D:/stydy/uni/6_семестр/Методы компиляции/лаба/interpreter/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/stydy/uni/6_семестр/Методы компиляции/лаба/interpreter/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+D:/stydy/uni/6_семестр/Методы компиляции/лаба/interpreter/cmake-build-debug/CMakeFiles/list_install_components.dir
+D:/stydy/uni/6_семестр/Методы компиляции/лаба/interpreter/cmake-build-debug/CMakeFiles/install.dir
+D:/stydy/uni/6_семестр/Методы компиляции/лаба/interpreter/cmake-build-debug/CMakeFiles/install/local.dir
+D:/stydy/uni/6_семестр/Методы компиляции/лаба/interpreter/cmake-build-debug/CMakeFiles/install/strip.dir
