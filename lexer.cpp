@@ -231,6 +231,9 @@ string Lexer::tokenToString(Token token)
 Token Lexer::parseNumber()
 {
     string result;
+    int n { 0 };
+    float x;
+    float d { 1 };
     bool isFloat = false;
 
     for (; _position < _input.length(); _position++) {
@@ -238,21 +241,21 @@ Token Lexer::parseNumber()
 
         switch (currentChar) {
         case '.':
-            if (isFloat) {
+            if (isFloat) { // Если число уже вещественное.
                 _position++;
-                return Token { ERROR, result };
+                return Token { ERROR, "ERROR" }; // 13. Символ в неположенном месте.
             }
             if (_position + 1 < _input.length() && isdigit(_input[_position + 1])
                 && _position - 1 >= 0 && isdigit(_input[_position - 1])) {
                 isFloat = true;
-                result += currentChar;
-            } else {
+                x = static_cast<float>(n); // 10. Переход с целого числа на вещественное.
+            } else { // Если точка не окружена цифрами.
                 if (_input[_position + 1] == ';' || isspace(_input[_position + 1])) {
                     _position++;
-                    return Token { ERROR, result };
+                    return Token { ERROR, "ERROR" }; // 13. Символ в неположенном месте.
                 } else {
                     _position++;
-                    return Token { ERROR, result };
+                    return Token { ERROR, "ERROR" }; // 13. Символ в неположенном месте.
                 }
             }
             break;
@@ -265,19 +268,23 @@ Token Lexer::parseNumber()
         case ' ':
         case '{':
         case '}':
-            return isFloat ? Token { FLOAT, std::stof(result) }
-                           : Token { INTEGER, std::stoi(result) };
+            return isFloat ? Token { FLOAT, x } : Token { INTEGER, n };
             break;
         default:
             if (!isdigit(currentChar)) {
                 _position++;
                 return Token { ERROR, result };
             }
-            result += currentChar;
+            if (!isFloat) // 2. Продолжение лексемы числа
+                n = n * 10 + (int)currentChar - (int)'0';
+            else { // 11. Продолжение лексемы вещественного числа
+                d *= 0.1f;
+                x = x + ((int)currentChar - (int)'0') * d;
+            }
             break;
         }
     }
-    return isFloat ? Token { FLOAT, std::stof(result) } : Token { INTEGER, std::stoi(result) };
+    return isFloat ? Token { FLOAT, x } : Token { INTEGER, n };
 }
 
 void Lexer::skipWhitespace()

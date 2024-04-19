@@ -6,7 +6,7 @@
 
 int main()
 {
-    string input = "1 == hello 13 31.23 .. 32";
+    string input = "7321.4321"; // why debugger shows 7321.4316??
     Lexer lexer;
     lexer.setText(input);
 
