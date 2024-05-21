@@ -1,16 +1,4 @@
 #include "lexer.h"
-#include <iostream>
-
-std::ostream &operator<<(std::ostream &os, const Token token)
-{
-    os << "Token type: " << Lexer::tokenToString(token) << ", value: ";
-    std::visit(
-     [&os](auto &&arg) {
-         os << arg;
-     },
-     token.value);
-    return os << "\n";
-}
 
 Lexer::Lexer() : _position(0)
 {}
@@ -46,72 +34,72 @@ void Lexer::generateTokens()
             break;
         case '+':
             _position++;
-            _tokens.push_back(Token { PLUS, "+" });
+            _tokens.push_back(Token { PLUS, "+", _position });
             break;
         case '-':
             _position++;
-            _tokens.push_back(Token { MINUS, "-" });
+            _tokens.push_back(Token { MINUS, "-", _position });
             break;
         case '*':
             _position++;
-            _tokens.push_back(Token { MULTIPLY, "*" });
+            _tokens.push_back(Token { MULTIPLY, "*", _position });
             break;
         case '/':
             _position++;
-            _tokens.push_back(Token { DIVIDE, "/" });
+            _tokens.push_back(Token { DIVIDE, "/", _position });
             break;
         case '(':
             _position++;
-            _tokens.push_back(Token { LPAREN, "(" });
+            _tokens.push_back(Token { LPAREN, "(", _position });
             break;
         case ')':
             _position++;
-            _tokens.push_back(Token { RPAREN, ")" });
+            _tokens.push_back(Token { RPAREN, ")", _position });
             break;
         case ';':
             _position++;
-            _tokens.push_back(Token { SEMICOLON, ";" });
+            _tokens.push_back(Token { SEMICOLON, ";", _position });
             break;
         case ',':
             _position++;
-            _tokens.push_back(Token { COMMA, "," });
+            _tokens.push_back(Token { COMMA, ",", _position });
             break;
         case '&':
             _position++;
-            _tokens.push_back(Token { AND, "&" });
+            _tokens.push_back(Token { AND, "&", _position });
             break;
         case '|':
             _position++;
-            _tokens.push_back(Token { OR, "|" });
+            _tokens.push_back(Token { OR, "|", _position });
             break;
         case '{':
             _position++;
-            _tokens.push_back(Token { LBRACE, "{" });
+            _tokens.push_back(Token { LBRACE, "{", _position });
             break;
         case '\n':
             _position++;
-            _tokens.push_back(Token { EOL, "EOL" });
+            _tokens.push_back(Token { EOL, "EOL", _position });
             break;
         case '}':
             _position++;
-            _tokens.push_back(Token { RBRACE, "}" });
+            _tokens.push_back(Token { RBRACE, "}", _position });
             break;
         case '[':
             _position++;
-            _tokens.push_back(Token { LSQUARE, "[" });
+            _tokens.push_back(Token { LSQUARE, "[", _position });
             break;
         case ']':
             _position++;
-            _tokens.push_back(Token { RSQUARE, "]" });
+            _tokens.push_back(Token { RSQUARE, "]", _position });
             break;
         case '!':
             if (_position + 1 < _input.length() && _input[_position + 1] == '=') {
                 _position += 2;
-                _tokens.push_back(Token { NOT_EQUALS, "!=" });
+                _tokens.push_back(Token { NOT_EQUALS, "!=", _position });
                 break;
             } else {
                 _position++;
-                _tokens.push_back(Token { NOT, "!" });
+                _tokens.push_back(Token { NOT, "!", _position });
                 break;
             }
         case '<':
@@ -120,25 +108,25 @@ void Lexer::generateTokens()
             if (_position + 1 < _input.length() && _input[_position + 1] == '=') {
                 _position += 2;
                 if (currentChar == '<') {
-                    _tokens.push_back(Token { LESS_OR_EQUAL, "<=" });
+                    _tokens.push_back(Token { LESS_OR_EQUAL, "<=", _position });
                     break;
                 } else if (currentChar == '>') {
-                    _tokens.push_back(Token { GREATER_OR_EQUAL, ">=" });
+                    _tokens.push_back(Token { GREATER_OR_EQUAL, ">=", _position });
                     break;
                 } else if (currentChar == '=') {
-                    _tokens.push_back(Token { EQUAL, "==" });
+                    _tokens.push_back(Token { EQUAL, "==", _position });
                     break;
                 }
             } else {
                 _position++;
                 if (currentChar == '<') {
-                    _tokens.push_back(Token { LESS, "<" });
+                    _tokens.push_back(Token { LESS, "<", _position });
                     break;
                 } else if (currentChar == '>') {
-                    _tokens.push_back(Token { GREATER, ">" });
+                    _tokens.push_back(Token { GREATER, ">", _position });
                     break;
                 } else if (currentChar == '=') {
-                    _tokens.push_back(Token { ASSIGN, "=" });
+                    _tokens.push_back(Token { ASSIGN, "=", _position });
                     break;
                 }
             }
@@ -151,31 +139,31 @@ void Lexer::generateTokens()
                 }
 
                 if (word == "int") {
-                    _tokens.push_back(Token { INT_DECLARE, "int" });
+                    _tokens.push_back(Token { INT_DECLARE, "int", _position });
                     break;
                 } else if (word == "float") {
-                    _tokens.push_back(Token { FLOAT_DECLARE, "float" });
+                    _tokens.push_back(Token { FLOAT_DECLARE, "float", _position });
                     break;
-                } else if (word == "arr") {
-                    _tokens.push_back(Token { ARRAY_DECLARE, "arr" });
+                } else if (word == "array") {
+                    _tokens.push_back(Token { ARRAY_DECLARE, "array", _position });
                     break;
                 } else if (word == "read") {
-                    _tokens.push_back(Token { READ, "read" });
+                    _tokens.push_back(Token { READ, "read", _position });
                     break;
                 } else if (word == "write") {
-                    _tokens.push_back(Token { WRITE, "write" });
+                    _tokens.push_back(Token { WRITE, "write", _position });
                     break;
                 } else if (word == "if") {
-                    _tokens.push_back(Token { IF, "if" });
+                    _tokens.push_back(Token { IF, "if", _position });
                     break;
                 } else if (word == "else") {
-                    _tokens.push_back(Token { ELSE, "else" });
+                    _tokens.push_back(Token { ELSE, "else", _position });
                     break;
                 } else if (word == "while") {
-                    _tokens.push_back(Token { WHILE, "while" });
+                    _tokens.push_back(Token { WHILE, "while", _position });
                     break;
                 } else {
-                    _tokens.push_back(Token { NAME, word });
+                    _tokens.push_back(Token { NAME, word, _position });
                     break;
                 }
             } else if (isspace(currentChar)) {
@@ -186,91 +174,7 @@ void Lexer::generateTokens()
         }
     }
 
-    _tokens.push_back(Token { END, "\0" });
-}
-
-std::string Lexer::tokenToString(Token token)
-{
-    switch (token.type) {
-    case TokenType::DEFAULT:
-        return "DEFAULT";
-    case TokenType::EMPTY:
-        return "EMPTY";
-    case TokenType::ERROR:
-        return "ERROR";
-    case TokenType::INTEGER:
-        return "INTEGER";
-    case TokenType::FLOAT:
-        return "FLOAT";
-    case TokenType::PLUS:
-        return "PLUS";
-    case TokenType::MINUS:
-        return "MINUS";
-    case TokenType::MULTIPLY:
-        return "MULTIPLY";
-    case TokenType::DIVIDE:
-        return "DIVIDE";
-    case TokenType::LPAREN:
-        return "LPAREN";
-    case TokenType::RPAREN:
-        return "RPAREN";
-    case TokenType::SEMICOLON:
-        return "SEMICOLON";
-    case TokenType::COMMA:
-        return "COMMA";
-    case TokenType::LBRACE:
-        return "LBRACE";
-    case TokenType::RBRACE:
-        return "RBRACE";
-    case TokenType::LSQUARE:
-        return "LSQUARE";
-    case TokenType::RSQUARE:
-        return "RSQUARE";
-    case TokenType::NOT:
-        return "NOT";
-    case TokenType::LESS:
-        return "LESS";
-    case TokenType::GREATER:
-        return "GREATER";
-    case TokenType::LESS_OR_EQUAL:
-        return "LESS_OR_EQUAL";
-    case TokenType::GREATER_OR_EQUAL:
-        return "GREATER_OR_EQUAL";
-    case TokenType::EQUAL:
-        return "EQUAL";
-    case TokenType::NOT_EQUALS:
-        return "NOT_EQUALS";
-    case TokenType::ASSIGN:
-        return "ASSIGN";
-    case TokenType::INT_DECLARE:
-        return "INT_DECLARE";
-    case TokenType::FLOAT_DECLARE:
-        return "FLOAT_DECLARE";
-    case TokenType::ARRAY_DECLARE:
-        return "ARRAY";
-    case TokenType::READ:
-        return "READ";
-    case TokenType::WRITE:
-        return "WRITE";
-    case TokenType::IF:
-        return "IF";
-    case TokenType::ELSE:
-        return "ELSE";
-    case TokenType::WHILE:
-        return "WHILE";
-    case TokenType::NAME:
-        return "NAME";
-    case TokenType::AND:
-        return "AND";
-    case TokenType::OR:
-        return "OR";
-    case TokenType::END:
-        return "END";
-    case TokenType::EOL:
-        return "EOL";
-    default:
-        return "UNKNOWN";
-    }
+    _tokens.push_back(Token { END, "END", ++_position });
 }
 
 std::vector<Token> Lexer::tokens() const
@@ -293,7 +197,7 @@ Token Lexer::parseNumber()
         case '.':
             if (isFloat) { // Если число уже вещественное.
                 _position++;
-                return Token { ERROR, "ERROR" }; // 13. Символ в неположенном месте.
+                return Token { ERROR, "ERROR", _position }; // 13. Символ в неположенном месте.
             }
             if (_position + 1 < _input.length() && isdigit(_input[_position + 1])
                 && _position - 1 >= 0 && isdigit(_input[_position - 1])) {
@@ -302,10 +206,10 @@ Token Lexer::parseNumber()
             } else { // Если точка не окружена цифрами.
                 if (_input[_position + 1] == ';' || isspace(_input[_position + 1])) {
                     _position++;
-                    return Token { ERROR, "ERROR" }; // 13. Символ в неположенном месте.
+                    return Token { ERROR, "ERROR", _position }; // 13. Символ в неположенном месте.
                 } else {
                     _position++;
-                    return Token { ERROR, "ERROR" }; // 13. Символ в неположенном месте.
+                    return Token { ERROR, "ERROR", _position }; // 13. Символ в неположенном месте.
                 }
             }
             break;
@@ -334,7 +238,7 @@ Token Lexer::parseNumber()
             break;
         }
     }
-    return isFloat ? Token { FLOAT, x } : Token { INTEGER, n };
+    return isFloat ? Token { FLOAT, x, _position } : Token { INTEGER, n, _position };
 }
 
 void Lexer::skipWhitespace()

@@ -6,7 +6,7 @@
 
 int main()
 {
-    std::string input = "int a = 4.2;";
+    std::string input = "54.";
     Lexer lexer;
     lexer.setText(input);
 
