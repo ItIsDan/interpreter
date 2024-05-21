@@ -3,8 +3,8 @@
 
 #include <string>
 #include <variant>
-
-using namespace std;
+#include <vector>
+#include <iostream>
 
 enum TokenType : int
 {
@@ -58,29 +58,32 @@ struct Token
 {
     TokenType type { EMPTY };
     std::variant<std::string, int, float> value;
-};
 
-// Когда меняется позиция вводит две переменные , где номер в строке увеличивается, если \n то номер
-// в строке обнуляем а номер строки увеличиваем.
+    friend std::ostream &operator<<(std::ostream &os, const Token token);
+};
 
 class Lexer
 {
 public:
     explicit Lexer();
 
-    void setText(const string &text);
+    void setText(const std::string &text);
 
-    Token getNextToken();
+    void generateTokens();
 
-    string tokenToString(Token token);
+    static std::string tokenToString(Token token);
+
+    std::vector<Token> tokens() const;
 
 private:
-    string _input;
+    std::string _input;
     size_t _position;
 
     Token parseNumber();
 
     void skipWhitespace();
+
+    std::vector<Token> _tokens;
 };
 
 #endif // LEXER_H

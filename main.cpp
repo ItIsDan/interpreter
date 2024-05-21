@@ -6,26 +6,22 @@
 
 int main()
 {
-    string input = "7321.4321"; // why debugger shows 7321.4316??
+    std::string input = "int a = 4.2;";
     Lexer lexer;
     lexer.setText(input);
 
-    vector<Token> tokens;
-    Token token = lexer.getNextToken();
-    while (token.type != END) {
-        tokens.push_back(token);
-        token = lexer.getNextToken();
-    }
+    lexer.generateTokens();
 
-    for (const Token &token : tokens) {
+    for (const Token &token : lexer.tokens()) {
         if (token.type != ERROR)
-            std::cout << lexer.tokenToString(token) << " ";
+            std::cout << token;
         else {
-            std::cout << lexer.tokenToString(token) << "\n";
+            std::cout << token;
             exit(-1);
         }
     }
-    cout << endl;
+
+    std::cout << std::endl;
 
     return 0;
 }
