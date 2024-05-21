@@ -108,13 +108,13 @@ void Lexer::generateTokens()
             if (_position + 1 < _input.length() && _input[_position + 1] == '=') {
                 _position += 2;
                 if (currentChar == '<') {
-                    _tokens.push_back(Token { LESS_OR_EQUAL, "<=", _position });
+                    _tokens.push_back(Token { LESS_OR_EQUALS, "<=", _position });
                     break;
                 } else if (currentChar == '>') {
-                    _tokens.push_back(Token { GREATER_OR_EQUAL, ">=", _position });
+                    _tokens.push_back(Token { GREATER_OR_EQUALS, ">=", _position });
                     break;
                 } else if (currentChar == '=') {
-                    _tokens.push_back(Token { EQUAL, "==", _position });
+                    _tokens.push_back(Token { EQUALS, "==", _position });
                     break;
                 }
             } else {
@@ -162,6 +162,9 @@ void Lexer::generateTokens()
                 } else if (word == "while") {
                     _tokens.push_back(Token { WHILE, "while", _position });
                     break;
+                } else if (word == "const") {
+                    _tokens.push_back(Token { CONST_DECLARE, "const", _position });
+                    break;
                 } else {
                     _tokens.push_back(Token { NAME, word, _position });
                     break;
@@ -173,8 +176,10 @@ void Lexer::generateTokens()
             break;
         }
 
-        if (_tokens.back().type == ERROR)
-            return;
+        if (_tokens.back().type == ERROR) {
+            std::cout << _tokens.back();
+            exit(1);
+        }
     }
 
     _tokens.push_back(Token { END, "END", ++_position });
@@ -225,6 +230,8 @@ Token Lexer::parseNumber()
         case ' ':
         case '{':
         case '}':
+        case '(':
+        case ')':
             return isFloat ? Token { FLOAT, x, _position } : Token { INTEGER, n, _position };
             break;
         default:

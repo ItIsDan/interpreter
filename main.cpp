@@ -3,20 +3,29 @@
 #include <vector>
 #include <map>
 #include "lexer.h"
+#include "parser.h"
 
 int main()
 {
-    std::string input = "54.44 e";
+    std::string input = "array a = 5;";
     Lexer lexer;
     lexer.setText(input);
 
     lexer.generateTokens();
+    auto tokens = lexer.tokens();
 
-    for (const Token &token : lexer.tokens()) {
-        std::cout << token;
+    for (const Token &token : tokens) {
+        // std::cout << token;
     }
 
-    std::cout << std::endl;
+    Parser parser;
+    parser.setTokens(tokens);
+
+    auto RPN = parser.parseToRPN();
+    std::cout << input << "\n";
+    for (const auto &a : RPN) std::cout << a << " ";
+
+    std::cout << "_|_" << std::endl;
 
     return 0;
 }

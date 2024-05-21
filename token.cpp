@@ -2,13 +2,13 @@
 
 std::ostream &operator<<(std::ostream &os, const Token token)
 {
-    os << "Token type: " << tokenToString(token.type) << "\t\tvalue: ";
+    os << "Token type: " << tokenToString(token.type) << " | value: ";
     std::visit(
      [&os](auto &&arg) {
          os << arg;
      },
      token.value);
-    return os << "\t\tEnd position: " << token.endPosition << "\n";
+    return os << " | End position: " << token.endPosition << "\n";
 }
 
 std::string tokenToString(TokenType type)
@@ -54,12 +54,12 @@ std::string tokenToString(TokenType type)
         return "LESS";
     case TokenType::GREATER:
         return "GREATER";
-    case TokenType::LESS_OR_EQUAL:
-        return "LESS_OR_EQUAL";
-    case TokenType::GREATER_OR_EQUAL:
-        return "GREATER_OR_EQUAL";
-    case TokenType::EQUAL:
-        return "EQUAL";
+    case TokenType::LESS_OR_EQUALS:
+        return "LESS_OR_EQUALS";
+    case TokenType::GREATER_OR_EQUALS:
+        return "GREATER_OR_EQUALS";
+    case TokenType::EQUALS:
+        return "EQUALS";
     case TokenType::NOT_EQUALS:
         return "NOT_EQUALS";
     case TokenType::ASSIGN:
@@ -68,6 +68,8 @@ std::string tokenToString(TokenType type)
         return "INT_DECLARE";
     case TokenType::FLOAT_DECLARE:
         return "FLOAT_DECLARE";
+    case TokenType::CONST_DECLARE:
+        return "CONST_DECLARE";
     case TokenType::ARRAY_DECLARE:
         return "ARRAY";
     case TokenType::READ:
