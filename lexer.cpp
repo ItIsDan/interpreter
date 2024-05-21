@@ -172,6 +172,9 @@ void Lexer::generateTokens()
             }
             break;
         }
+
+        if (_tokens.back().type == ERROR)
+            return;
     }
 
     _tokens.push_back(Token { END, "END", ++_position });
@@ -222,12 +225,12 @@ Token Lexer::parseNumber()
         case ' ':
         case '{':
         case '}':
-            return isFloat ? Token { FLOAT, x } : Token { INTEGER, n };
+            return isFloat ? Token { FLOAT, x, _position } : Token { INTEGER, n, _position };
             break;
         default:
             if (!isdigit(currentChar)) {
                 _position++;
-                return Token { ERROR, result };
+                return Token { ERROR, result, _position };
             }
             if (!isFloat) // 2. Продолжение лексемы числа
                 n = n * 10 + (int)currentChar - (int)'0';
