@@ -68,6 +68,7 @@ std::vector<std::string> Parser::parseToRPN()
 
     std::vector<std::string> output;
     std::stack<Token> operators;
+    std::unordered_set<std::string> declaredVariables;
 
     for (size_t i = 0; i < _tokens.size(); ++i) {
         switch (_tokens[i].type) {
@@ -77,9 +78,12 @@ std::vector<std::string> Parser::parseToRPN()
                 && (_tokens[i + 1].type != ASSIGN)) {
                 break;
             }
+            if (declaredVariables.find(getStringFromVariant(_tokens[i].value))
+                == declaredVariables.end()) {
+                throw std::runtime_error("Use of undeclared variable: "
+                                         + getStringFromVariant(_tokens[i].value));
+            }
         case INTEGER:
-            output.push_back(getStringFromVariant(_tokens[i].value));
-            break;
         case FLOAT:
             output.push_back(getStringFromVariant(_tokens[i].value));
             break;
@@ -147,13 +151,39 @@ std::vector<std::string> Parser::parseToRPN()
                 throw std::runtime_error("Invalid array declaration syntax");
             }
             break;
+        case READ:
+        case WRITE:
+            if (i + 3 < _tokens.size() && _tokens[i + 1].type == LPAREN
+                && _tokens[i + 2].type == NAME && _tokens[i + 3].type == RPAREN) {
+                std::string varName = getStringFromVariant(_tokens[i + 2].value);
+                if (declaredVariables.find(varName) == declaredVariables.end()) {
+                    throw std::runtime_error("Use of undeclared variable: " + varName);
+                }
+                output.push_back(varName);
+                output.push_back(_tokens[i].type == READ ? "READ" : "WRITE");
+                i += 3; // Пропускаем следующие 3 токена
+            } else {
+                throw std::runtime_error("Invalid read/write syntax");
+            }
+            break;
+        case FLOAT_DECLARE:
+        case INT_DECLARE:
+            if (i + 1 < _tokens.size() && _tokens[i + 1].type == NAME) {
+                auto varName = getStringFromVariant(_tokens[i + 1].value);
+                declaredVariables.insert(varName);
+                i += 1; // Пропускаем токен имени
+            } else {
+                throw std::runtime_error("Invalid variable declaration syntax");
+            }
+            break;
+
         default:
             break;
         }
     }
 
     while (!operators.empty()) {
-        if (operators.top().type == LPAREN) {
+        if (operators.top().type == LPAREN || operators.top().type == LSQUARE) {
             throw std::runtime_error("Mismatched parentheses");
         }
         output.push_back(getStringFromVariant(operators.top().value));

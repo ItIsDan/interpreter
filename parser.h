@@ -5,6 +5,10 @@
 #include <vector>
 #include <iostream>
 #include <stack>
+#include <variant>
+#include <unordered_map>
+#include <stdexcept>
+#include <unordered_set>
 
 class Parser
 {
