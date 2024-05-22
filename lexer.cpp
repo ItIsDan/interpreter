@@ -177,7 +177,7 @@ void Lexer::generateTokens()
         }
 
         if (_tokens.back().type == ERROR) {
-            std::cout << _tokens.back();
+            std::cout << "Lexer panics!  " << _tokens.back();
             exit(1);
         }
     }
@@ -232,6 +232,8 @@ Token Lexer::parseNumber()
         case '}':
         case '(':
         case ')':
+        case '[':
+        case ']':
             return isFloat ? Token { FLOAT, x, _position } : Token { INTEGER, n, _position };
             break;
         default:

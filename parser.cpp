@@ -53,37 +53,52 @@ std::string Parser::getStringFromVariant(const std::variant<std::string, int, fl
 
 std::vector<std::string> Parser::parseToRPN()
 {
-    if (_tokens[0].type == END)
-        return std::vector<std::string> { "Empty" };
+    if (_tokens[0].type == END) {
+        std::cout << "Tokens were empty";
+        exit(0);
+    }
+    // Empty lexer
+
+    for (const auto &token : _tokens)
+        if (token.type == ERROR) {
+            std::cout << "Parser panics! " << token;
+            exit(2);
+        }
+    // Error token found, somehow passed lexer
 
     std::vector<std::string> output;
     std::stack<Token> operators;
 
-    for (const auto &token : _tokens) {
-        switch (token.type) {
+    for (size_t i = 0; i < _tokens.size(); ++i) {
+        switch (_tokens[i].type) {
         case NAME:
+            if ((i - 1 >= 0)
+                && ((_tokens[i - 1].type == INT_DECLARE) || _tokens[i - 1].type == FLOAT_DECLARE)
+                && (_tokens[i + 1].type != ASSIGN)) {
+                break;
+            }
         case INTEGER:
-            output.push_back(getStringFromVariant(token.value));
+            output.push_back(getStringFromVariant(_tokens[i].value));
             break;
         case FLOAT:
-            output.push_back(getStringFromVariant(token.value));
+            output.push_back(getStringFromVariant(_tokens[i].value));
             break;
         case ASSIGN:
-            operators.push(token);
+            operators.push(_tokens[i]);
             break;
         case PLUS:
         case MINUS:
         case MULTIPLY:
         case DIVIDE:
             while (!operators.empty()
-                   && precedence(operators.top().type) >= precedence(token.type)) {
+                   && precedence(operators.top().type) >= precedence(_tokens[i].type)) {
                 output.push_back(getStringFromVariant(operators.top().value));
                 operators.pop();
             }
-            operators.push(token);
+            operators.push(_tokens[i]);
             break;
         case LPAREN:
-            operators.push(token);
+            operators.push(_tokens[i]);
             break;
         case RPAREN:
             while (!operators.empty() && operators.top().type != LPAREN) {
@@ -95,10 +110,41 @@ std::vector<std::string> Parser::parseToRPN()
             }
             operators.pop(); // Удаляем левую скобку
             break;
+        case LSQUARE:
+            operators.push(_tokens[i]);
+            break;
+        case RSQUARE:
+            while (!operators.empty() && operators.top().type != LSQUARE) {
+                output.push_back(getStringFromVariant(operators.top().value));
+                operators.pop();
+            }
+            if (operators.empty()) {
+                throw std::runtime_error("Mismatched square brackets");
+            }
+            operators.pop(); // Удаляем левую квадратную скобку
+            output.push_back("INDEX"); // Добавляем оператор индексации массива
+            break;
         case SEMICOLON:
             while (!operators.empty()) {
                 output.push_back(getStringFromVariant(operators.top().value));
                 operators.pop();
+            }
+            break;
+        case ARRAY_DECLARE:
+            if (i + 3 < _tokens.size() && _tokens[i + 1].type == NAME
+                && _tokens[i + 2].type == LSQUARE && _tokens[i + 3].type == INTEGER
+                && _tokens[i + 4].type == RSQUARE) {
+                output.push_back(getStringFromVariant(_tokens[i + 1].value));
+                output.push_back(getStringFromVariant(_tokens[i + 3].value));
+                output.push_back("ARRAY_DECLARE");
+                i += 4;
+            } else if (_tokens[i + 3].type == NAME) {
+                output.push_back(getStringFromVariant(_tokens[i + 1].value));
+                output.push_back(getStringFromVariant(_tokens[i + 3].value));
+                output.push_back("ARRAY_DECLARE");
+                i += 4;
+            } else {
+                throw std::runtime_error("Invalid array declaration syntax");
             }
             break;
         default:
