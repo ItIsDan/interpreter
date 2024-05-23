@@ -10,9 +10,9 @@ void Parser::setTokens(const std::vector<Token> &tokens)
 
 bool Parser::isOperator(const TokenType type)
 {
-    return type == PLUS || type == MULTIPLY || type == DIVIDE || type == ASSIGN || type == EQUALS
-           || type == NOT_EQUALS || type == LESS || type == GREATER || type == LESS_OR_EQUALS
-           || type == GREATER_OR_EQUALS;
+    return type == PLUS || type == MINUS || type == MULTIPLY || type == DIVIDE || type == ASSIGN
+           || type == EQUALS || type == NOT_EQUALS || type == LESS || type == GREATER
+           || type == LESS_OR_EQUALS || type == GREATER_OR_EQUALS;
 }
 
 int Parser::precedence(const TokenType type)
@@ -71,6 +71,15 @@ std::vector<RPSElement> Parser::parseToRPN()
     std::unordered_set<std::string> declaredVariables;
 
     for (size_t i = 0; i < _tokens.size(); ++i) {
+        if (i + 1 < _tokens.size() && isOperator(_tokens[i + 1].type)
+            && isOperator(_tokens[i].type)) {
+            std::cout << "Parser warns! "
+                      << "Syntax error: operator after operator at position "
+                          + std::to_string(_tokens[i].endPosition)
+                      << "\n";
+            exit(1);
+        }
+
         switch (_tokens[i].type) {
         case NAME:
             if ((i - 1 >= 0)
@@ -109,7 +118,7 @@ std::vector<RPSElement> Parser::parseToRPN()
             operators.push({ RPS_OPERATOR, _tokens[i].type, _tokens[i].value });
             break;
         case RPAREN:
-            while (!operators.empty() && operators.top().type != LPAREN) {
+            while (!operators.empty() && operators.top().tokenType != LPAREN) {
                 output.push_back(
                  { RPS_OPERATOR, operators.top().tokenType, operators.top().value });
                 operators.pop();
@@ -133,10 +142,10 @@ std::vector<RPSElement> Parser::parseToRPN()
              { RPS_INDEX, INTEGER, "INDEX" }); // Добавляем оператор индексации массива
             break;
         case SEMICOLON:
-            while (!operators.empty()) {
-                output.push_back(operators.top());
-                operators.pop();
-            }
+            //            while (!operators.empty()) {
+            //                output.push_back(operators.top());
+            //                operators.pop();
+            //            }
             break;
         case ARRAY_DECLARE:
             if (i + 3 < _tokens.size() && _tokens[i + 1].type == NAME
@@ -188,7 +197,6 @@ std::vector<RPSElement> Parser::parseToRPN()
             if (i + 1 < _tokens.size() && _tokens[i + 1].type == NAME) {
                 auto varName = getStringFromVariant(_tokens[i + 1].value);
                 declaredVariables.insert(varName);
-                //                i += 1; // Пропускаем токен имени
             } else {
                 throw std::runtime_error("Invalid variable declaration syntax");
             }
