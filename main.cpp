@@ -24,7 +24,7 @@ int main()
     auto RPN = parser.parseToRPN();
     //            std::cout << input << "\n";
 
-    for (const auto &a : RPN) std::cout << a << " ";
+    for (const auto &a : RPN) std::cout << a;
 
     std::cout << "_|_" << std::endl;
 

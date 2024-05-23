@@ -17,7 +17,7 @@ public:
 
     void setTokens(const std::vector<Token> &tokens);
     std::string getStringFromVariant(const std::variant<std::string, int, float> &var);
-    std::vector<std::string> parseToRPN();
+    std::vector<RPSElement> parseToRPN();
 
     bool isOperator(const TokenType type);
 

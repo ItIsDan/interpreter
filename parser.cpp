@@ -51,7 +51,7 @@ std::string Parser::getStringFromVariant(const std::variant<std::string, int, fl
     }
 }
 
-std::vector<std::string> Parser::parseToRPN()
+std::vector<RPSElement> Parser::parseToRPN()
 {
     if (_tokens[0].type == END) {
         std::cout << "Tokens were empty";
@@ -66,8 +66,8 @@ std::vector<std::string> Parser::parseToRPN()
         }
     // Error token found, somehow passed lexer
 
-    std::vector<std::string> output;
-    std::stack<Token> operators;
+    std::vector<RPSElement> output;
+    std::stack<RPSElement> operators;
     std::unordered_set<std::string> declaredVariables;
 
     for (size_t i = 0; i < _tokens.size(); ++i) {
@@ -83,30 +83,35 @@ std::vector<std::string> Parser::parseToRPN()
                 throw std::runtime_error("Use of undeclared variable: "
                                          + getStringFromVariant(_tokens[i].value));
             }
+            output.push_back({ RPS_STRING, _tokens[i].type, _tokens[i].value });
+            break;
         case INTEGER:
+            output.push_back({ RPS_INTEGER, _tokens[i].type, _tokens[i].value });
+            break;
         case FLOAT:
-            output.push_back(getStringFromVariant(_tokens[i].value));
+            output.push_back({ RPS_FLOAT, _tokens[i].type, _tokens[i].value });
             break;
         case ASSIGN:
-            operators.push(_tokens[i]);
-            break;
         case PLUS:
         case MINUS:
         case MULTIPLY:
         case DIVIDE:
             while (!operators.empty()
-                   && precedence(operators.top().type) >= precedence(_tokens[i].type)) {
-                output.push_back(getStringFromVariant(operators.top().value));
+                   && precedence(static_cast<TokenType>(operators.top().tokenType))
+                       >= precedence(_tokens[i].type)) {
+                output.push_back(operators.top());
                 operators.pop();
             }
-            operators.push(_tokens[i]);
+            operators.push({ RPS_OPERATOR, _tokens[i].type, _tokens[i].value });
             break;
         case LPAREN:
-            operators.push(_tokens[i]);
+        case LSQUARE:
+            operators.push({ RPS_OPERATOR, _tokens[i].type, _tokens[i].value });
             break;
         case RPAREN:
             while (!operators.empty() && operators.top().type != LPAREN) {
-                output.push_back(getStringFromVariant(operators.top().value));
+                output.push_back(
+                 { RPS_OPERATOR, operators.top().tokenType, operators.top().value });
                 operators.pop();
             }
             if (operators.empty()) {
@@ -114,23 +119,22 @@ std::vector<std::string> Parser::parseToRPN()
             }
             operators.pop(); // Удаляем левую скобку
             break;
-        case LSQUARE:
-            operators.push(_tokens[i]);
-            break;
         case RSQUARE:
             while (!operators.empty() && operators.top().type != LSQUARE) {
-                output.push_back(getStringFromVariant(operators.top().value));
+                output.push_back(
+                 { RPS_OPERATOR, operators.top().tokenType, operators.top().value });
                 operators.pop();
             }
             if (operators.empty()) {
                 throw std::runtime_error("Mismatched square brackets");
             }
             operators.pop(); // Удаляем левую квадратную скобку
-            output.push_back("INDEX"); // Добавляем оператор индексации массива
+            output.push_back(
+             { RPS_INDEX, INTEGER, "INDEX" }); // Добавляем оператор индексации массива
             break;
         case SEMICOLON:
             while (!operators.empty()) {
-                output.push_back(getStringFromVariant(operators.top().value));
+                output.push_back(operators.top());
                 operators.pop();
             }
             break;
@@ -138,32 +142,45 @@ std::vector<std::string> Parser::parseToRPN()
             if (i + 3 < _tokens.size() && _tokens[i + 1].type == NAME
                 && _tokens[i + 2].type == LSQUARE && _tokens[i + 3].type == INTEGER
                 && _tokens[i + 4].type == RSQUARE) {
-                output.push_back(getStringFromVariant(_tokens[i + 1].value));
-                output.push_back(getStringFromVariant(_tokens[i + 3].value));
-                output.push_back("ARRAY_DECLARE");
+                auto varName = getStringFromVariant(_tokens[i + 1].value);
+                declaredVariables.insert(varName);
+
+                output.push_back({ RPS_STRING, _tokens[i + 1].type, _tokens[i + 1].value });
+                output.push_back({ RPS_INTEGER, _tokens[i + 3].type, _tokens[i + 3].value });
+                output.push_back({ RPS_ARRAY_DECLARE, ARRAY_DECLARE, "ARRAY_DECLARE" });
                 i += 4;
             } else if (_tokens[i + 3].type == NAME) {
-                output.push_back(getStringFromVariant(_tokens[i + 1].value));
-                output.push_back(getStringFromVariant(_tokens[i + 3].value));
-                output.push_back("ARRAY_DECLARE");
+                auto varName = getStringFromVariant(_tokens[i + 1].value);
+                declaredVariables.insert(varName);
+
+                output.push_back({ RPS_STRING, _tokens[i + 1].type, _tokens[i + 1].value });
+                output.push_back({ RPS_STRING, _tokens[i + 3].type, _tokens[i + 3].value });
+                output.push_back({ RPS_ARRAY_DECLARE, ARRAY_DECLARE, "ARRAY_DECLARE" });
                 i += 4;
             } else {
                 throw std::runtime_error("Invalid array declaration syntax");
             }
             break;
-        case READ:
-        case WRITE:
+        case PRINT:
+        case INPUT:
             if (i + 3 < _tokens.size() && _tokens[i + 1].type == LPAREN
                 && _tokens[i + 2].type == NAME && _tokens[i + 3].type == RPAREN) {
                 std::string varName = getStringFromVariant(_tokens[i + 2].value);
                 if (declaredVariables.find(varName) == declaredVariables.end()) {
                     throw std::runtime_error("Use of undeclared variable: " + varName);
                 }
-                output.push_back(varName);
-                output.push_back(_tokens[i].type == READ ? "READ" : "WRITE");
+                output.push_back({ RPS_STRING, _tokens[i + 2].type, _tokens[i + 2].value });
+
+                RPSElement rpsElement;
+                if (_tokens[i].type == PRINT)
+                    rpsElement = RPSElement { RPS_PRINT, PRINT, "PRINT" };
+                else
+                    rpsElement = RPSElement { RPS_INPUT, INPUT, "INPUT" };
+
+                output.push_back(rpsElement);
                 i += 3; // Пропускаем следующие 3 токена
             } else {
-                throw std::runtime_error("Invalid read/write syntax");
+                throw std::runtime_error("Invalid i/o syntax");
             }
             break;
         case FLOAT_DECLARE:
@@ -171,7 +188,7 @@ std::vector<std::string> Parser::parseToRPN()
             if (i + 1 < _tokens.size() && _tokens[i + 1].type == NAME) {
                 auto varName = getStringFromVariant(_tokens[i + 1].value);
                 declaredVariables.insert(varName);
-                i += 1; // Пропускаем токен имени
+                //                i += 1; // Пропускаем токен имени
             } else {
                 throw std::runtime_error("Invalid variable declaration syntax");
             }
@@ -183,10 +200,10 @@ std::vector<std::string> Parser::parseToRPN()
     }
 
     while (!operators.empty()) {
-        if (operators.top().type == LPAREN || operators.top().type == LSQUARE) {
+        if (operators.top().tokenType == LPAREN || operators.top().tokenType == LSQUARE) {
             throw std::runtime_error("Mismatched parentheses");
         }
-        output.push_back(getStringFromVariant(operators.top().value));
+        output.push_back(operators.top());
         operators.pop();
     }
 

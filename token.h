@@ -36,8 +36,8 @@ enum TokenType : int
     FLOAT_DECLARE,
     ARRAY_DECLARE,
     CONST_DECLARE,
-    READ,
-    WRITE,
+    PRINT,
+    INPUT,
     IF,
     ELSE,
     WHILE,
@@ -64,5 +64,26 @@ struct Token
 };
 
 std::string tokenToString(TokenType type);
+
+enum RPSElementType
+{
+    RPS_STRING,
+    RPS_INTEGER,
+    RPS_FLOAT,
+    RPS_OPERATOR,
+    RPS_ARRAY_DECLARE,
+    RPS_INDEX,
+    RPS_PRINT,
+    RPS_INPUT
+};
+
+struct RPSElement
+{
+    RPSElementType type;
+    TokenType tokenType; // Как уточнение
+    std::variant<std::string, int, float> value;
+
+    friend std::ostream &operator<<(std::ostream &os, const RPSElement element);
+};
 
 #endif // TOKEN_H

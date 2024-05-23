@@ -72,10 +72,10 @@ std::string tokenToString(TokenType type)
         return "CONST_DECLARE";
     case TokenType::ARRAY_DECLARE:
         return "ARRAY";
-    case TokenType::READ:
-        return "READ";
-    case TokenType::WRITE:
-        return "WRITE";
+    case TokenType::PRINT:
+        return "PRINT";
+    case TokenType::INPUT:
+        return "INPUT";
     case TokenType::IF:
         return "IF";
     case TokenType::ELSE:
@@ -95,4 +95,14 @@ std::string tokenToString(TokenType type)
     default:
         return "UNKNOWN";
     }
+}
+
+std::ostream &operator<<(std::ostream &os, const RPSElement element)
+{
+    std::visit(
+     [&os](auto &&arg) {
+         os << arg;
+     },
+     element.value);
+    return os << " ";
 }

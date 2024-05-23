@@ -147,11 +147,11 @@ void Lexer::generateTokens()
                 } else if (word == "array") {
                     _tokens.push_back(Token { ARRAY_DECLARE, "array", _position });
                     break;
-                } else if (word == "read") {
-                    _tokens.push_back(Token { READ, "read", _position });
+                } else if (word == "print") {
+                    _tokens.push_back(Token { PRINT, "print", _position });
                     break;
-                } else if (word == "write") {
-                    _tokens.push_back(Token { WRITE, "write", _position });
+                } else if (word == "input") {
+                    _tokens.push_back(Token { INPUT, "input", _position });
                     break;
                 } else if (word == "if") {
                     _tokens.push_back(Token { IF, "if", _position });
